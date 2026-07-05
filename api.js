@@ -15,7 +15,6 @@ export function setApiMode(mode) {
 export async function fetchCqcData(query, type = "location") {
   const mode = getApiMode();
   if (mode === "demo") {
-    // Search the mock database
     const queryLower = query.toLowerCase();
     const matches = [];
     for (const key in MOCK_CQC_RECORDS) {
@@ -32,13 +31,16 @@ export async function fetchCqcData(query, type = "location") {
     try {
       const response = await fetch(`/api/cqc?query=${encodeURIComponent(query)}&type=${type}`);
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("API key is missing or unauthorized");
+        const errorData = await response.json().catch(() => ({}));
+        let errMsg = errorData.error || `Server responded with status ${response.status}`;
+        
+        if (response.status === 401 || response.status === 403) {
+          errMsg = `Authentication failed (${response.status} Forbidden). Your CQC_API_KEY on Netlify may be invalid or unauthorized.`;
+        } else if (response.status === 429) {
+          errMsg = "Rate limit exceeded on CQC API. Please try again later.";
         }
-        if (response.status === 429) {
-          throw new Error("Rate limit exceeded on CQC API");
-        }
-        throw new Error("CQC API service is currently unavailable");
+        
+        throw new Error(errMsg);
       }
       const data = await response.json();
       return { success: true, results: data.results || [], mode: "live" };
@@ -51,13 +53,10 @@ export async function fetchCqcData(query, type = "location") {
 export async function fetchCompaniesHouseData(query) {
   const mode = getApiMode();
   if (mode === "demo") {
-    // Search mock data
     const queryLower = query.trim();
-    // Check direct company number matching
     if (MOCK_COMPANIES_HOUSE_RECORDS[queryLower]) {
       return { success: true, results: [MOCK_COMPANIES_HOUSE_RECORDS[queryLower]], mode: "demo" };
     }
-    // Search by name
     const matches = [];
     for (const key in MOCK_COMPANIES_HOUSE_RECORDS) {
       const record = MOCK_COMPANIES_HOUSE_RECORDS[key];
@@ -72,13 +71,16 @@ export async function fetchCompaniesHouseData(query) {
     try {
       const response = await fetch(`/api/companies-house?query=${encodeURIComponent(query)}`);
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("API key is missing or unauthorized");
+        const errorData = await response.json().catch(() => ({}));
+        let errMsg = errorData.error || `Server responded with status ${response.status}`;
+        
+        if (response.status === 401 || response.status === 403) {
+          errMsg = `Authentication failed (${response.status} Forbidden). Your COMPANIES_HOUSE_API_KEY on Netlify may be invalid or unauthorized.`;
+        } else if (response.status === 429) {
+          errMsg = "Rate limit exceeded on Companies House API. Please try again later.";
         }
-        if (response.status === 429) {
-          throw new Error("Rate limit exceeded on Companies House API");
-        }
-        throw new Error("Companies House API service is currently unavailable");
+        
+        throw new Error(errMsg);
       }
       const data = await response.json();
       return { success: true, results: data.results || [], mode: "live" };

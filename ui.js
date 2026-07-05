@@ -306,7 +306,14 @@ function setupSearchFlow() {
         elements.searchErrorAlert.innerHTML = "Live API keys are missing. Add CQC_API_KEY and COMPANIES_HOUSE_API_KEY in Netlify environment variables.";
         showPane("pane-search");
       } else {
-        elements.searchResultsList.innerHTML = `<div class="card"><p class="text-danger">Search failed: ${res.error || "Unknown network error."}</p></div>`;
+        elements.searchResultsList.innerHTML = `
+          <div class="card">
+            <p class="text-danger"><strong>Search failed:</strong> ${res.error || "Unknown network error."}</p>
+            <div class="margin-top-sm" style="border-top: 1px solid var(--color-border); padding-top: 12px;">
+              <p class="form-tip"><strong>Hint:</strong> If you are testing the application locally or on a dev branch without configured credentials, go to the <strong>Settings</strong> tab and switch <strong>Active Operation Mode</strong> to <strong>Demo Mode</strong> to use local mock data.</p>
+            </div>
+          </div>
+        `;
       }
       return;
     }
