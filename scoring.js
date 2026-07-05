@@ -19,7 +19,7 @@ export function calculateQualificationScore(data) {
     (data.messyNotes || "")
   ).toLowerCase();
   
-  const cqcRating = (data.cqcRating || "").toLowerCase();
+  const cqcRating = (data.latestCqcRating || data.cqcRating || "").toLowerCase();
   const currentSystem = (data.currentCarePlanning || data.currentRostering || "").toLowerCase();
 
   if (data.serviceType) {

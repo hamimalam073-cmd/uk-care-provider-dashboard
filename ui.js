@@ -1,7 +1,7 @@
 // UI Manager and Renderer for UK Care Provider Intelligence Dashboard.
 // Complies with no em dash, no double/triple hyphen rules.
 
-import { getApiMode, setApiMode, fetchCqcData, fetchCompaniesHouseData } from "./api.js";
+import { fetchCqcData, fetchCompaniesHouseData } from "./api.js";
 import { parseCqcRecord } from "./cqc.js";
 import { parseCompaniesHouseRecord, matchCqcToCompaniesHouse } from "./companiesHouse.js";
 import { calculateQualificationScore, evaluateComplianceRisks } from "./scoring.js";
@@ -73,6 +73,10 @@ const elements = {
   profManager: document.getElementById("prof-manager"),
   profNominated: document.getElementById("prof-nominated"),
   profStatus: document.getElementById("prof-status"),
+  profCqcActivities: document.getElementById("prof-cqc-activities"),
+  profCqcService: document.getElementById("prof-cqc-service"),
+  profCqcSpecialisms: document.getElementById("prof-cqc-specialisms"),
+  profCqcChecked: document.getElementById("prof-cqc-checked"),
 
   profChName: document.getElementById("prof-ch-name"),
   profChNumber: document.getElementById("prof-ch-number"),
@@ -80,6 +84,10 @@ const elements = {
   profChAddress: document.getElementById("prof-ch-address"),
   profChIncDate: document.getElementById("prof-ch-inc-date"),
   profChFiling: document.getElementById("prof-ch-filing"),
+  profChSic: document.getElementById("prof-ch-sic"),
+  profChDirectors: document.getElementById("prof-ch-directors"),
+  profChPsc: document.getElementById("prof-ch-psc"),
+  profChChecked: document.getElementById("prof-ch-checked"),
   chMatchConfidence: document.getElementById("ch-match-confidence"),
   chMatchRationale: document.getElementById("ch-match-rationale"),
   chMatchBadgeBox: document.getElementById("ch-match-badge-box"),
@@ -88,7 +96,7 @@ const elements = {
   btnTabOverview: document.getElementById("btn-tab-overview"),
   btnTabPeople: document.getElementById("btn-tab-people"),
   btnTabCompliance: document.getElementById("btn-tab-compliance"),
-  btnTabSalesnotes: document.getElementById("btn-tab-salesnotes"),
+  btnTabCompany: document.getElementById("btn-tab-company"),
   btnTabOutreach: document.getElementById("btn-tab-outreach"),
   btnTabBdm: document.getElementById("btn-tab-bdm"),
 
@@ -96,7 +104,7 @@ const elements = {
   tabPaneOverview: document.getElementById("tab-pane-overview"),
   tabPanePeople: document.getElementById("tab-pane-people"),
   tabPaneCompliance: document.getElementById("tab-pane-compliance"),
-  tabPaneSalesnotes: document.getElementById("tab-pane-salesnotes"),
+  tabPaneCompany: document.getElementById("tab-pane-company"),
   tabPaneOutreach: document.getElementById("tab-pane-outreach"),
   tabPaneBdm: document.getElementById("tab-pane-bdm"),
 
@@ -301,44 +309,11 @@ function setupSearchFlow() {
 
     const res = await fetchCqcData(query);
     if (!res.success) {
-      // Fallback to mock data search if live API call fails to guarantee a working demo
-      const queryLower = query.toLowerCase();
-      const mockMatches = [];
-      for (const acc of SAMPLE_ACCOUNTS) {
-        if (acc.providerName.toLowerCase().includes(queryLower) || 
-            (acc.postcode && acc.postcode.toLowerCase().includes(queryLower)) ||
-            (acc.cqcLocationId && acc.cqcLocationId.toLowerCase() === queryLower) ||
-            (acc.cqcProviderId && acc.cqcProviderId.toLowerCase() === queryLower)) {
-          mockMatches.push(acc);
-        }
-      }
-
-      if (mockMatches.length > 0) {
-        renderSearchResults(mockMatches);
-        
-        // Prepend a notification explaining we fell back to mock data
-        const banner = document.createElement("div");
-        banner.className = "warning-alert";
-        banner.style.marginTop = "0";
-        banner.style.marginBottom = "16px";
-        banner.innerHTML = `⚠️ Live API query failed (${res.error}). Displaying matching offline demo records instead.`;
-        elements.searchResultsList.insertBefore(banner, elements.searchResultsList.firstChild);
-      } else {
-        if (res.error && res.error.toLowerCase().includes("key is missing")) {
-          elements.searchErrorAlert.classList.remove("hidden");
-          elements.searchErrorAlert.innerHTML = "Live API keys are missing. Add CQC_API_KEY and COMPANIES_HOUSE_API_KEY in Netlify environment variables.";
-          showPane("pane-search");
-        } else {
-          elements.searchResultsList.innerHTML = `
-            <div class="card">
-              <p class="text-danger"><strong>Search failed:</strong> ${res.error || "Unknown network error."}</p>
-              <div class="margin-top-sm" style="border-top: 1px solid var(--color-border); padding-top: 12px;">
-                <p class="form-tip"><strong>Hint:</strong> If you are testing the application locally or on a dev branch without configured credentials, go to the <strong>Settings</strong> tab and switch <strong>Active Operation Mode</strong> to <strong>Demo Mode</strong> to use local mock data.</p>
-              </div>
-            </div>
-          `;
-        }
-      }
+      elements.searchResultsList.innerHTML = `
+        <div class="card">
+          <p class="text-danger"><strong>Search failed:</strong> ${res.error || "CQC API service is currently unavailable."}</p>
+        </div>
+      `;
       return;
     }
 
@@ -363,15 +338,12 @@ function setupSearchFlow() {
 
 function renderSearchResults(results) {
   elements.searchResultsList.innerHTML = "";
-  
-  const mode = getApiMode();
-  const fictionalFlag = mode === "demo" ? " [Fictional Demo Result]" : "";
 
   if (!results || results.length === 0) {
     elements.resultsCountTitle.textContent = "Search Results (0 found)";
     elements.searchResultsList.innerHTML = `
       <div class="card text-center">
-        <h3>No verified provider found.</h3>
+        <h3>No verified CQC provider found.</h3>
         <p class="form-tip">Try provider name, postcode, CQC location ID, or company name.</p>
       </div>
     `;
@@ -384,10 +356,10 @@ function renderSearchResults(results) {
     const card = document.createElement("div");
     card.className = "result-item-card";
     
-    // Normalise rating/postcode display
     const parsed = parseCqcRecord(loc);
     const ratingLabel = parsed.latestCqcRating || "Not found in verified source";
     const ratingClass = ratingLabel.toLowerCase().replace(/\s+/g, "-");
+    const fictionalFlag = parsed.isSample ? " [Fictional]" : "";
     
     card.innerHTML = `
       <div class="result-details">
@@ -445,8 +417,6 @@ async function loadProviderProfile(cqcRecord, optionalFullMock = null) {
   let chRecord = null;
   let chMatch = { confidence: "None", reason: "No matching record queried.", warn: true };
 
-  const mode = getApiMode();
-  
   if (optionalFullMock) {
     // If loading mock sample account, extract CH details directly
     activeAccount = { ...optionalFullMock };
@@ -470,24 +440,12 @@ async function loadProviderProfile(cqcRecord, optionalFullMock = null) {
       chRecord = parseCompaniesHouseRecord(matchResult.match);
       chMatch = matchResult;
     } else {
-      // Fallback: Check mock Companies House records offline
-      let foundMockCh = null;
-      for (const key in MOCK_COMPANIES_HOUSE_RECORDS) {
-        const rec = MOCK_COMPANIES_HOUSE_RECORDS[key];
-        if (key === activeAccount.companiesHouseNumber || 
-            rec.registeredCompanyName.toLowerCase().includes(activeAccount.providerName.toLowerCase())) {
-          foundMockCh = rec;
-          break;
-        }
-      }
-      if (foundMockCh) {
-        chRecord = parseCompaniesHouseRecord(foundMockCh);
-        chMatch = {
-          confidence: "High",
-          reason: "Matched offline from mock database (Live API failed or not configured).",
-          warn: false
-        };
-      }
+      chRecord = null;
+      chMatch = { 
+        confidence: "None", 
+        reason: chRes.error || "No matching record resolved from Companies House registry.", 
+        warn: true 
+      };
     }
   }
 
@@ -512,8 +470,14 @@ async function loadProviderProfile(cqcRecord, optionalFullMock = null) {
     activeAccount.registeredOfficeAddress = "Not found in verified source";
   }
 
-  // Reset override alerts
-  elements.manualOverrideWarning.classList.add("hidden");
+  activeAccount.isSample = !!optionalFullMock;
+
+  if (activeAccount.isSample) {
+    elements.manualOverrideWarning.classList.remove("hidden");
+    elements.manualOverrideWarning.textContent = "⚠️ Fictional Sample Profile Active (Offline Demo Mode)";
+  } else {
+    elements.manualOverrideWarning.classList.add("hidden");
+  }
 
   // Render header values
   elements.profileProviderName.textContent = activeAccount.providerName;
@@ -536,6 +500,11 @@ async function loadProviderProfile(cqcRecord, optionalFullMock = null) {
   elements.profManager.textContent = activeAccount.registeredManagerName;
   elements.profNominated.textContent = activeAccount.nominatedIndividualName;
   elements.profStatus.textContent = activeAccount.registrationStatus;
+  
+  elements.profCqcActivities.textContent = activeAccount.regulatedActivities && activeAccount.regulatedActivities.length > 0 ? activeAccount.regulatedActivities.join(", ") : "Not found in verified source";
+  elements.profCqcService.textContent = activeAccount.serviceType || "Not found in verified source";
+  elements.profCqcSpecialisms.textContent = activeAccount.specialisms && activeAccount.specialisms.length > 0 ? activeAccount.specialisms.join(", ") : "Not found in verified source";
+  elements.profCqcChecked.textContent = new Date().toISOString().split("T")[0];
 
   // CH Render
   elements.profChName.textContent = activeAccount.companiesHouseName;
@@ -544,6 +513,10 @@ async function loadProviderProfile(cqcRecord, optionalFullMock = null) {
   elements.profChAddress.textContent = activeAccount.registeredOfficeAddress;
   elements.profChIncDate.textContent = activeAccount.incorporationDate;
   elements.profChFiling.textContent = chRecord ? chRecord.filingHistorySummary : "Not found in verified source";
+  elements.profChSic.textContent = chRecord?.sicCodes && chRecord.sicCodes.length > 0 ? chRecord.sicCodes.join(", ") : "Not found in verified source";
+  elements.profChDirectors.textContent = chRecord?.directors && chRecord.directors.length > 0 ? chRecord.directors.join(", ") : "Not found in verified source";
+  elements.profChPsc.textContent = chRecord?.personsWithSignificantControl && chRecord.personsWithSignificantControl.length > 0 ? chRecord.personsWithSignificantControl.join(", ") : "Not found in verified source";
+  elements.profChChecked.textContent = chRecord ? new Date().toISOString().split("T")[0] : "Not found in verified source";
 
   // CH Match Rating Render
   elements.chMatchConfidence.textContent = chMatch.confidence;
@@ -666,7 +639,7 @@ function setupProfileTabNavigation() {
     { btn: elements.btnTabOverview, pane: elements.tabPaneOverview },
     { btn: elements.btnTabPeople, pane: elements.tabPanePeople },
     { btn: elements.btnTabCompliance, pane: elements.tabPaneCompliance },
-    { btn: elements.btnTabSalesnotes, pane: elements.tabPaneSalesnotes },
+    { btn: elements.btnTabCompany, pane: elements.tabPaneCompany },
     { btn: elements.btnTabOutreach, pane: elements.tabPaneOutreach },
     { btn: elements.btnTabBdm, pane: elements.tabPaneBdm }
   ];
@@ -685,7 +658,7 @@ function selectProfileTab(buttonId) {
     { btn: elements.btnTabOverview, pane: elements.tabPaneOverview },
     { btn: elements.btnTabPeople, pane: elements.tabPanePeople },
     { btn: elements.btnTabCompliance, pane: elements.tabPaneCompliance },
-    { btn: elements.btnTabSalesnotes, pane: elements.tabPaneSalesnotes },
+    { btn: elements.btnTabCompany, pane: elements.tabPaneCompany },
     { btn: elements.btnTabOutreach, pane: elements.tabPaneOutreach },
     { btn: elements.btnTabBdm, pane: elements.tabPaneBdm }
   ];
@@ -705,17 +678,11 @@ function selectProfileTab(buttonId) {
 
 // Settings configuration
 function setupSettingsAndMode() {
-  const activeMode = getApiMode();
-  elements.selectSystemMode.value = activeMode;
+  if (elements.selectSystemMode) {
+    elements.selectSystemMode.parentElement.classList.add("hidden");
+  }
 
-  elements.selectSystemMode.addEventListener("change", (e) => {
-    const val = e.target.value;
-    setApiMode(val);
-    updateModeBadge();
-    checkEnvironmentKeys();
-  });
-
-  // Verify inputs save button inside Sales Notes Tab
+  // Verify inputs save button inside Company Tab
   elements.btnSaveNotesChanges.addEventListener("click", (e) => {
     e.preventDefault();
     if (!activeAccount) return;
@@ -736,13 +703,16 @@ function setupSettingsAndMode() {
                           activeAccount.cqcRating !== lastApiData.latestCqcRating);
       if (isMismatch) {
         elements.manualOverrideWarning.classList.remove("hidden");
+        elements.manualOverrideWarning.textContent = "⚠️ Note: Manually edited data differs from CQC API records.";
       } else {
-        elements.manualOverrideWarning.classList.add("hidden");
+        if (!activeAccount.isSample) {
+          elements.manualOverrideWarning.classList.add("hidden");
+        }
       }
     }
 
     recalculateAccountScoresAndOutreach();
-    alert("Sales notes changes applied. Qualification scores and outreach collateral updated.");
+    alert("Company configuration applied. Opportunity scores and outreach collateral updated.");
   });
 
   // Save Account Profile button in header
@@ -757,52 +727,45 @@ function setupSettingsAndMode() {
 }
 
 async function checkEnvironmentKeys() {
-  const mode = getApiMode();
-  if (mode === "demo") {
-    elements.statusCqcKey.textContent = "Fictional Demo Environment";
-    elements.statusCqcKey.className = "cred-value active";
-    elements.statusChKey.textContent = "Fictional Demo Environment";
-    elements.statusChKey.className = "cred-value active";
-    elements.liveApiErrorAlert.classList.add("hidden");
-    elements.searchErrorAlert.classList.add("hidden");
-  } else {
-    // Live mode key availability checks via test ping requests
-    elements.statusCqcKey.textContent = "Checking...";
+  elements.statusCqcKey.textContent = "Checking...";
+  elements.statusCqcKey.className = "cred-value";
+  elements.statusChKey.textContent = "Checking...";
+  elements.statusChKey.className = "cred-value";
+
+  const cqcTest = await fetch(`/api/cqc?query=test`);
+  const chTest = await fetch(`/api/companies-house?query=test`);
+
+  const isCqcActive = (cqcTest.status !== 401 && cqcTest.status !== 403);
+  const isChActive = (chTest.status !== 401 && chTest.status !== 403);
+
+  if (!isCqcActive) {
+    elements.statusCqcKey.textContent = "Not Configured";
     elements.statusCqcKey.className = "cred-value";
-    elements.statusChKey.textContent = "Checking...";
-    elements.statusChKey.className = "cred-value";
-
-    const cqcTest = await fetch(`/api/cqc?query=test`);
-    const chTest = await fetch(`/api/companies-house?query=test`);
-
-    if (cqcTest.status === 401) {
-      elements.statusCqcKey.textContent = "Not Configured";
-      elements.statusCqcKey.className = "cred-value";
-    } else {
-      elements.statusCqcKey.textContent = "Active on Server";
-      elements.statusCqcKey.className = "cred-value active";
-    }
-
-    if (chTest.status === 401) {
-      elements.statusChKey.textContent = "Not Configured";
-      elements.statusChKey.className = "cred-value";
-    } else {
-      elements.statusChKey.textContent = "Active on Server";
-      elements.statusChKey.className = "cred-value active";
-    }
-
-    if (cqcTest.status === 401 || chTest.status === 401) {
-      elements.liveApiErrorAlert.classList.remove("hidden");
-    } else {
-      elements.liveApiErrorAlert.classList.add("hidden");
-    }
+  } else {
+    elements.statusCqcKey.textContent = "Active on Server";
+    elements.statusCqcKey.className = "cred-value active";
   }
+
+  if (!isChActive) {
+    elements.statusChKey.textContent = "Not Configured";
+    elements.statusChKey.className = "cred-value";
+  } else {
+    elements.statusChKey.textContent = "Active on Server";
+    elements.statusChKey.className = "cred-value active";
+  }
+
+  if (!isCqcActive || !isChActive) {
+    elements.liveApiErrorAlert.classList.remove("hidden");
+  } else {
+    elements.liveApiErrorAlert.classList.add("hidden");
+  }
+
+  updateModeBadge(isCqcActive && isChActive);
 }
 
-function updateModeBadge() {
-  const mode = getApiMode();
-  elements.apiStatusBadge.textContent = mode === "demo" ? "Demo Mode" : "Live API Mode";
-  elements.apiStatusBadge.className = `api-mode-badge ${mode === "live" ? "live" : ""}`;
+function updateModeBadge(isActive) {
+  elements.apiStatusBadge.textContent = isActive ? "Live Mode Active" : "Live API Key Error";
+  elements.apiStatusBadge.className = `api-mode-badge ${isActive ? "live" : ""}`;
 }
 
 // Objections triggers

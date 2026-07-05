@@ -47,7 +47,7 @@
           </div>
           
           <div class="search-options">
-            <button class="btn btn-outline btn-sm" id="btn-use-sample">Use sample data</button>
+            <button class="btn btn-outline btn-sm" id="btn-use-sample">Try Sample Provider</button>
           </div>
 
           <div class="sample-container hidden" id="sample-cards-container">
@@ -152,6 +152,22 @@
                   <span class="data-label">Registration Status</span>
                   <span class="data-value" id="prof-status">Not found in verified source</span>
                 </div>
+                <div class="data-group">
+                  <span class="data-label">Regulated Activities</span>
+                  <span class="data-value" id="prof-cqc-activities">Not found in verified source</span>
+                </div>
+                <div class="data-group">
+                  <span class="data-label">Service Type</span>
+                  <span class="data-value" id="prof-cqc-service">Not found in verified source</span>
+                </div>
+                <div class="data-group">
+                  <span class="data-label">Specialisms</span>
+                  <span class="data-value" id="prof-cqc-specialisms">Not found in verified source</span>
+                </div>
+                <div class="data-group">
+                  <span class="data-label">Last Checked Date</span>
+                  <span class="data-value" id="prof-cqc-checked">Not found in verified source</span>
+                </div>
               </div>
               <div class="cqc-acknowledgement">Uses CQC information under the Open Government Licence.</div>
             </section>
@@ -183,6 +199,22 @@
                   <span class="data-label">Filing Status</span>
                   <span class="data-value" id="prof-ch-filing">Not found in verified source</span>
                 </div>
+                <div class="data-group">
+                  <span class="data-label">SIC Codes</span>
+                  <span class="data-value" id="prof-ch-sic">Not found in verified source</span>
+                </div>
+                <div class="data-group">
+                  <span class="data-label">Directors</span>
+                  <span class="data-value" id="prof-ch-directors">Not found in verified source</span>
+                </div>
+                <div class="data-group">
+                  <span class="data-label">Persons with Significant Control</span>
+                  <span class="data-value" id="prof-ch-psc">Not found in verified source</span>
+                </div>
+                <div class="data-group">
+                  <span class="data-label">Last Checked Date</span>
+                  <span class="data-value" id="prof-ch-checked">Not found in verified source</span>
+                </div>
               </div>
               
               <div class="match-validation-alert" id="ch-match-badge-box">
@@ -199,7 +231,7 @@
             <button class="tab-btn active" id="btn-tab-overview">Overview</button>
             <button class="tab-btn" id="btn-tab-people">People</button>
             <button class="tab-btn" id="btn-tab-compliance">Compliance</button>
-            <button class="tab-btn" id="btn-tab-salesnotes">Sales Notes</button>
+            <button class="tab-btn" id="btn-tab-company">Company</button>
             <button class="tab-btn" id="btn-tab-outreach">Outreach</button>
             <button class="tab-btn" id="btn-tab-bdm">BDM Brief</button>
           </div>
@@ -324,7 +356,7 @@
               </div>
             </div>
 
-            <div id="tab-pane-salesnotes" class="tab-content">
+            <div id="tab-pane-company" class="tab-content">
               <div class="grid-two">
                 <div class="card">
                   <h3>Current Systems</h3>
