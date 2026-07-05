@@ -11,3 +11,8 @@
   from = "/api/companies-house"
   to = "/.netlify/functions/companies-house-api"
   status = 200
+
+[[redirects]]
+  from = "/api/diagnostics"
+  to = "/.netlify/functions/diagnostics"
+  status = 200

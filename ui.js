@@ -732,35 +732,43 @@ async function checkEnvironmentKeys() {
   elements.statusChKey.textContent = "Checking...";
   elements.statusChKey.className = "cred-value";
 
-  const cqcTest = await fetch(`/api/cqc?query=test`);
-  const chTest = await fetch(`/api/companies-house?query=test`);
+  try {
+    const response = await fetch("/api/diagnostics");
+    if (response.ok) {
+      const data = await response.json();
+      
+      if (data.cqc_present) {
+        elements.statusCqcKey.textContent = `Present (Length: ${data.cqc_length})`;
+        elements.statusCqcKey.className = "cred-value active";
+      } else {
+        elements.statusCqcKey.textContent = "Not Configured";
+        elements.statusCqcKey.className = "cred-value";
+      }
 
-  const isCqcActive = (cqcTest.status !== 401 && cqcTest.status !== 403);
-  const isChActive = (chTest.status !== 401 && chTest.status !== 403);
+      if (data.ch_present) {
+        elements.statusChKey.textContent = `Present (Length: ${data.ch_length})`;
+        elements.statusChKey.className = "cred-value active";
+      } else {
+        elements.statusChKey.textContent = "Not Configured";
+        elements.statusChKey.className = "cred-value";
+      }
 
-  if (!isCqcActive) {
-    elements.statusCqcKey.textContent = "Not Configured";
-    elements.statusCqcKey.className = "cred-value";
-  } else {
-    elements.statusCqcKey.textContent = "Active on Server";
-    elements.statusCqcKey.className = "cred-value active";
-  }
-
-  if (!isChActive) {
-    elements.statusChKey.textContent = "Not Configured";
-    elements.statusChKey.className = "cred-value";
-  } else {
-    elements.statusChKey.textContent = "Active on Server";
-    elements.statusChKey.className = "cred-value active";
-  }
-
-  if (!isCqcActive || !isChActive) {
+      const allActive = data.cqc_present && data.ch_present;
+      if (!allActive) {
+        elements.liveApiErrorAlert.classList.remove("hidden");
+      } else {
+        elements.liveApiErrorAlert.classList.add("hidden");
+      }
+      updateModeBadge(allActive);
+    } else {
+      throw new Error(`Server returned status ${response.status}`);
+    }
+  } catch (error) {
+    elements.statusCqcKey.textContent = "Error checking server";
+    elements.statusChKey.textContent = "Error checking server";
     elements.liveApiErrorAlert.classList.remove("hidden");
-  } else {
-    elements.liveApiErrorAlert.classList.add("hidden");
+    updateModeBadge(false);
   }
-
-  updateModeBadge(isCqcActive && isChActive);
 }
 
 function updateModeBadge(isActive) {

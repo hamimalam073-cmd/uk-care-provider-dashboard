@@ -11,18 +11,19 @@ exports.handler = async function(event, context) {
   if (!apiKey) {
     return {
       statusCode: 401,
-      body: JSON.stringify({ error: "CQC API key is missing on the server" })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: "CQC API key is missing on the server. Please check the environment variables scope on Netlify." })
     };
   }
 
   try {
     let url = "";
     if (query.startsWith("1-")) {
-      // Direct ID lookup
-      url = `https://api.cqc.org.uk/public/v1/${type}s/${query}`;
+      // Direct ID lookup with mandatory partnerCode parameter
+      url = `https://api.cqc.org.uk/public/v1/${type}s/${query}?partnerCode=CareIntel`;
     } else {
-      // General query search
-      url = `https://api.cqc.org.uk/public/v1/${type}s?q=${encodeURIComponent(query)}`;
+      // General name search query using the correct parameter name (name) and partnerCode
+      url = `https://api.cqc.org.uk/public/v1/${type}s?name=${encodeURIComponent(query)}&partnerCode=CareIntel`;
     }
 
     const response = await fetch(url, {
@@ -33,9 +34,14 @@ exports.handler = async function(event, context) {
     });
 
     if (!response.ok) {
+      let errMsg = `CQC API responded with status ${response.status}`;
+      if (response.status === 401 || response.status === 403) {
+        errMsg = "Key found but authentication failed. Check CQC subscription status, product access, or auth header.";
+      }
       return {
         statusCode: response.status,
-        body: JSON.stringify({ error: `CQC API responded with status ${response.status}` })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ error: errMsg })
       };
     }
 
@@ -57,6 +63,7 @@ exports.handler = async function(event, context) {
   } catch (error) {
     return {
       statusCode: 500,
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ error: `CQC Function Error: ${error.message}` })
     };
   }

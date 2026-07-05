@@ -7,14 +7,16 @@ export async function fetchCqcData(query, type = "location") {
     const response = await fetch(`/api/cqc?query=${encodeURIComponent(query)}&type=${type}`);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      let errMsg = errorData.error || `Server responded with status ${response.status}`;
+      let errMsg = errorData.error || "";
       
-      if (response.status === 401 || response.status === 403) {
-        errMsg = "Live CQC search is not configured. Please add CQC_API_KEY in Netlify environment variables.";
-      } else if (response.status === 429) {
-        errMsg = "Rate limit exceeded on CQC API. Please try again later.";
-      } else {
-        errMsg = "CQC API service is currently unavailable.";
+      if (!errMsg) {
+        if (response.status === 401 || response.status === 403) {
+          errMsg = "Live CQC search is not configured. Please add CQC_API_KEY in Netlify environment variables.";
+        } else if (response.status === 429) {
+          errMsg = "Rate limit exceeded on CQC API. Please try again later.";
+        } else {
+          errMsg = "CQC API service is currently unavailable.";
+        }
       }
       
       return { success: false, error: errMsg };
@@ -31,14 +33,16 @@ export async function fetchCompaniesHouseData(query) {
     const response = await fetch(`/api/companies-house?query=${encodeURIComponent(query)}`);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      let errMsg = errorData.error || `Server responded with status ${response.status}`;
+      let errMsg = errorData.error || "";
       
-      if (response.status === 401 || response.status === 403) {
-        errMsg = "Live Companies House search is not configured. Please add COMPANIES_HOUSE_API_KEY in Netlify environment variables.";
-      } else if (response.status === 429) {
-        errMsg = "Rate limit exceeded on Companies House API. Please try again later.";
-      } else {
-        errMsg = "Companies House API service is currently unavailable.";
+      if (!errMsg) {
+        if (response.status === 401 || response.status === 403) {
+          errMsg = "Live Companies House search is not configured. Please add COMPANIES_HOUSE_API_KEY in Netlify environment variables.";
+        } else if (response.status === 429) {
+          errMsg = "Rate limit exceeded on Companies House API. Please try again later.";
+        } else {
+          errMsg = "Companies House API service is currently unavailable.";
+        }
       }
       
       return { success: false, error: errMsg };
@@ -47,5 +51,15 @@ export async function fetchCompaniesHouseData(query) {
     return { success: true, results: data.results || [] };
   } catch (error) {
     return { success: false, error: "Companies House API service is currently unavailable." };
+  }
+}
+export async function fetchDiagnosticsData() {
+  try {
+    const response = await fetch("/api/diagnostics");
+    if (!response.ok) return { success: false, error: `Diagnostics returned status ${response.status}` };
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, error: error.message };
   }
 }
