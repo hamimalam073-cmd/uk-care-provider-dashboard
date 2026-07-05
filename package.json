@@ -1,0 +1,9 @@
+{
+  "name": "uk-care-provider-dashboard",
+  "version": "1.0.0",
+  "description": "UK Care Provider Intelligence Dashboard built for SDR outreach",
+  "main": "app.js",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}

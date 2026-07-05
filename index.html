@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UK Care Provider Intelligence Dashboard</title>
+  <meta name="description" content="Sales intelligence and outreach generator for UK care sector SDRs, BDMs, and AEs. Pre-call research, qualification, and handover notes.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">UK</div>
+        <div class="brand-name">CareIntel</div>
+      </div>
+      <nav class="nav-menu">
+        <a href="#home" class="nav-item active" id="nav-home">
+          <span class="icon">🏠</span> Homepage
+        </a>
+        <a href="#dashboard" class="nav-item" id="nav-dashboard">
+          <span class="icon">💻</span> Workspace Dashboard
+        </a>
+        <a href="#saved" class="nav-item" id="nav-saved">
+          <span class="icon">💾</span> Saved Accounts
+        </a>
+        <a href="#daily" class="nav-item" id="nav-daily">
+          <span class="icon">📊</span> SDR Daily View
+        </a>
+        <a href="#settings" class="nav-item" id="nav-settings">
+          <span class="icon">⚙️</span> Settings &amp; API Tests
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="version">Version 1.0.0 (Demo Active)</span>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-header">
+        <div class="header-left">
+          <h1 id="view-title">Homepage</h1>
+        </div>
+        <div class="header-right">
+          <div class="api-mode-badge" id="api-status-badge">Demo Mode</div>
+          <button class="btn btn-primary btn-sm" id="btn-quick-start">Start Research</button>
+        </div>
+      </header>
+
+      <div class="view-viewport">
+        
+        <section id="view-home" class="view-panel active">
+          <div class="hero-section">
+            <h2 class="hero-title">Elevate Your Care Sector Sales Outreach</h2>
+            <p class="hero-subtitle">Instantly enrich UK care providers with verified CQC ratings, Companies House listings, operational pain points, and natural UK outreach copy.</p>
+            <div class="hero-actions">
+              <button class="btn btn-primary btn-lg" id="btn-home-cta">Start Researching Now</button>
+            </div>
+          </div>
+
+          <div class="grid-three">
+            <div class="card card-feature">
+              <div class="card-icon">🎯</div>
+              <h3>Pre call Research</h3>
+              <p>Prepare call angles in seconds. Understand care provider specifics before dialing their phone.</p>
+            </div>
+            <div class="card card-feature">
+              <div class="card-icon">✅</div>
+              <h3>Care Provider Qualification</h3>
+              <p>Qualify leads using dynamic BANT and MEDDICC evaluation models tailored for care operations.</p>
+            </div>
+            <div class="card card-feature">
+              <div class="card-icon">⚡</div>
+              <h3>CQC &amp; Company Enrichment</h3>
+              <p>Pull registered office locations, managers, and filings. Separate verified data from assumptions.</p>
+            </div>
+            <div class="card card-feature">
+              <div class="card-icon">📋</div>
+              <h3>Demo Handover Notes</h3>
+              <p>Generate copy ready briefs for BDMs and AEs, keeping CRM notes perfectly structured.</p>
+            </div>
+            <div class="card card-feature">
+              <div class="card-icon">💾</div>
+              <h3>CRM Note Generation</h3>
+              <p>Copy clean, templated notes directly into HubSpot, Salesforce, or other care sector databases.</p>
+            </div>
+            <div class="card card-feature">
+              <div class="card-icon">✉️</div>
+              <h3>Outreach Message Generation</h3>
+              <p>Create natural UK style scripts, email subject hooks, and follow up sequences without em dashes.</p>
+            </div>
+          </div>
+
+          <div class="sample-data-section">
+            <h3 class="section-title">Select Fictional Sample Profiles to Test</h3>
+            <div class="grid-three" id="sample-profiles-container">
+            </div>
+          </div>
+        </section>
+
+        <section id="view-dashboard" class="view-panel">
+          <div class="workspace-grid">
+            <aside class="workspace-input-panel">
+              <div class="card card-form">
+                <div class="card-header">
+                  <h3>Provider Intelligence Inputs</h3>
+                  <button class="btn btn-outline btn-sm" id="btn-clear-inputs">Clear Form</button>
+                </div>
+                
+                <div class="quick-matcher">
+                  <div class="form-group-row">
+                    <input type="text" id="match-search-input" placeholder="Search by provider name, postcode, or link...">
+                    <button class="btn btn-primary" id="btn-run-match">Verify Account</button>
+                  </div>
+                  <div id="match-result-feedback" class="match-feedback-box hidden"></div>
+                </div>
+
+                <div class="tab-selectors">
+                  <button class="tab-btn active" id="btn-tab-basic">Care Details</button>
+                  <button class="tab-btn" id="btn-tab-operational">Systems &amp; Context</button>
+                  <button class="tab-btn" id="btn-tab-notes">Messy Notes</button>
+                </div>
+
+                <form id="research-input-form" class="form-scroll-container">
+                  <div id="tab-content-basic" class="tab-content active">
+                    <div class="form-group">
+                      <label for="input-providerName">Provider Name *</label>
+                      <input type="text" id="input-providerName" required placeholder="Greenvale Residential Care">
+                    </div>
+                    <div class="form-group">
+                      <label for="input-serviceType">Service Type</label>
+                      <select id="input-serviceType">
+                        <option value="Care home">Care home</option>
+                        <option value="Homecare">Homecare</option>
+                        <option value="Supported living">Supported living</option>
+                        <option value="Children's services">Children's services</option>
+                        <option value="Complex care">Complex care</option>
+                        <option value="Learning disability support">Learning disability support</option>
+                        <option value="Mental health support">Mental health support</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="input-website">Website URL</label>
+                      <input type="url" id="input-website" placeholder="https://example.com">
+                    </div>
+                    <div class="form-group-row">
+                      <div class="form-group">
+                        <label for="input-location">Location (City)</label>
+                        <input type="text" id="input-location" placeholder="Bristol">
+                      </div>
+                      <div class="form-group">
+                        <label for="input-postcode">Postcode</label>
+                        <input type="text" id="input-postcode" placeholder="BS1 5AA">
+                      </div>
+                    </div>
+                    <div class="form-group-row">
+                      <div class="form-group">
+                        <label for="input-cqcProviderId">CQC Provider ID (England only)</label>
+                        <input type="text" id="input-cqcProviderId" placeholder="1-123456789">
+                      </div>
+                      <div class="form-group">
+                        <label for="input-cqcLocationId">CQC Location ID (England only)</label>
+                        <input type="text" id="input-cqcLocationId" placeholder="1-987654321">
+                      </div>
+                    </div>
+                    <div class="form-group-row">
+                      <div class="form-group">
+                        <label for="input-companiesHouseName">Companies House Name</label>
+                        <input type="text" id="input-companiesHouseName" placeholder="GREENVALE CARE LIMITED">
+                      </div>
+                      <div class="form-group">
+                        <label for="input-companiesHouseNumber">Company Number</label>
+                        <input type="text" id="input-companiesHouseNumber" placeholder="01234567">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="input-campaignType">Outreach Campaign Type</label>
+                      <select id="input-campaignType">
+                        <option value="Cold call">Cold call</option>
+                        <option value="Direct mail follow up">Direct mail follow up</option>
+                        <option value="Webinar follow up">Webinar follow up</option>
+                        <option value="Re engagement">Re engagement</option>
+                        <option value="Competitor displacement">Competitor displacement</option>
+                        <option value="Renewal timing">Renewal timing</option>
+                        <option value="Post email follow up">Post email follow up</option>
+                        <option value="Lost opportunity follow up">Lost opportunity follow up</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div id="tab-content-operational" class="tab-content">
+                    <div class="form-group-row">
+                      <div class="form-group">
+                        <label for="input-residentsCount">Residents Count</label>
+                        <input type="number" id="input-residentsCount" placeholder="34">
+                      </div>
+                      <div class="form-group">
+                        <label for="input-clientsCount">Clients Count</label>
+                        <input type="number" id="input-clientsCount" placeholder="58">
+                      </div>
+                    </div>
+                    <div class="form-group-row">
+                      <div class="form-group">
+                        <label for="input-bedsCount">Beds Count</label>
+                        <input type="number" id="input-bedsCount" placeholder="36">
+                      </div>
+                      <div class="form-group">
+                        <label for="input-staffCount">Staff Count</label>
+                        <input type="number" id="input-staffCount" placeholder="42">
+                      </div>
+                    </div>
+                    <div class="form-group-row">
+                      <div class="form-group">
+                        <label for="input-registeredManagerName">Registered Manager</label>
+                        <input type="text" id="input-registeredManagerName" placeholder="Sarah Jenkins">
+                      </div>
+                      <div class="form-group">
+                        <label for="input-nominatedIndividualName">Nominated Individual</label>
+                        <input type="text" id="input-nominatedIndividualName" placeholder="David Cole">
+                      </div>
+                    </div>
+                    <div class="form-group-row">
+                      <div class="form-group">
+                        <label for="input-currentCarePlanning">Care Planning System</label>
+                        <input type="text" id="input-currentCarePlanning" placeholder="Paper records">
+                      </div>
+                      <div class="form-group">
+                        <label for="input-currentRostering">Rostering System</label>
+                        <input type="text" id="input-currentRostering" placeholder="Spreadsheets">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="input-localAuthority">Local Authority</label>
+                      <input type="text" id="input-localAuthority" placeholder="Bristol City Council">
+                    </div>
+                    <div class="form-group">
+                      <label for="input-cqcRating">CQC Rating (England only)</label>
+                      <select id="input-cqcRating">
+                        <option value="Not found">Not found</option>
+                        <option value="Outstanding">Outstanding</option>
+                        <option value="Good">Good</option>
+                        <option value="Requires Improvement">Requires Improvement</option>
+                        <option value="Inadequate">Inadequate</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="input-timeline">Implementation Timeline</label>
+                      <input type="text" id="input-timeline" placeholder="Reviewing systems this quarter">
+                    </div>
+                    <div class="form-group">
+                      <label for="input-currentPainPoints">Current Pain Points</label>
+                      <input type="text" id="input-currentPainPoints" placeholder="Audit preparation, recording gaps">
+                    </div>
+                  </div>
+
+                  <div id="tab-content-notes" class="tab-content">
+                    <div class="form-group">
+                      <label for="input-messyNotes">Messy Research Notes</label>
+                      <textarea id="input-messyNotes" rows="12" placeholder="Paste unstructured email threads, inspection briefs, or call scribbles here..."></textarea>
+                    </div>
+                    <button type="button" class="btn btn-secondary w-full" id="btn-parse-notes">Parse Messy Notes</button>
+                    <p class="form-tip">Deterministic extractor targets emails, phone numbers, care systems, and ratings.</p>
+                  </div>
+                </form>
+
+                <div class="form-actions-bottom">
+                  <button type="submit" form="research-input-form" class="btn btn-primary w-full btn-lg" id="btn-generate-intel">Generate Sales Intelligence</button>
+                  <div class="form-actions-row">
+                    <button class="btn btn-success" id="btn-save-account">Save Account</button>
+                    <button class="btn btn-outline" id="btn-run-qa">Quality Check</button>
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            <section class="workspace-output-panel">
+              <div class="card card-sticky-summary" id="sticky-summary-panel">
+                <div class="sticky-flex-header">
+                  <div>
+                    <h2 id="summary-provider-name">Greenvale Residential Care</h2>
+                    <p><span id="summary-service-badge" class="badge">Care home</span> &middot; <span id="summary-location">Bristol</span></p>
+                  </div>
+                  <div class="score-card-badge">
+                    <div class="score-num" id="summary-score-num">0</div>
+                    <div class="score-label">Fit Score</div>
+                  </div>
+                </div>
+                <div id="manual-override-warning" class="warning-alert hidden">
+                  ⚠️ Note: Manually edited data differs from CQC API records.
+                </div>
+              </div>
+
+              <div class="empty-state-card" id="output-empty-state">
+                <div class="empty-icon">📊</div>
+                <h3>Intelligence Dashboard Ready</h3>
+                <p>Fill in the left research panel or select a fictional profile on the homepage to populate full regulatory audits and call scripts.</p>
+              </div>
+
+              <div class="intelligence-content hidden" id="output-intelligence-content">
+                
+                <div class="output-nav-tabs">
+                  <button class="tab-btn active" id="btn-out-profile">Account Profile</button>
+                  <button class="tab-btn" id="btn-out-copy">Outreach Copy</button>
+                  <button class="tab-btn" id="btn-out-objection">Discovery &amp; Objections</button>
+                  <button class="tab-btn" id="btn-out-handover">Handover Briefs</button>
+                </div>
+
+                <div id="tab-out-profile-content" class="output-tab-pane active">
+                  
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>Account Overview</h3>
+                      <button class="btn btn-outline btn-sm" id="btn-copy-brief">Copy Full Brief</button>
+                    </div>
+                    <p class="summary-paragraph" id="intel-overview-summary"></p>
+                    <div class="grid-two">
+                      <div class="data-group">
+                        <span class="data-label">Verified CQC Link (England only)</span>
+                        <span class="data-value" id="intel-cqc-link">Not found</span>
+                      </div>
+                      <div class="data-group">
+                        <span class="data-label">Companies House Record</span>
+                        <span class="data-value" id="intel-ch-record">Not found</span>
+                      </div>
+                    </div>
+                    <div class="cqc-acknowledgement" id="intel-cqc-licence"></div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>Compliance Signals</h3>
+                    </div>
+                    <div class="table-container">
+                      <table class="data-table">
+                        <thead>
+                          <tr>
+                            <th>Compliance Risk Type</th>
+                            <th>Risk Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Medication administration oversight</td>
+                            <td><span id="risk-medication" class="badge">Unknown</span></td>
+                          </tr>
+                          <tr>
+                            <td>Care planning accuracy</td>
+                            <td><span id="risk-care-planning" class="badge">Unknown</span></td>
+                          </tr>
+                          <tr>
+                            <td>Shift record keeping logs</td>
+                            <td><span id="risk-record-keeping" class="badge">Unknown</span></td>
+                          </tr>
+                          <tr>
+                            <td>Safeguarding oversight safety</td>
+                            <td><span id="risk-safeguarding" class="badge">Unknown</span></td>
+                          </tr>
+                          <tr>
+                            <td>Audit readiness pressure</td>
+                            <td><span id="risk-audit" class="badge">Unknown</span></td>
+                          </tr>
+                          <tr>
+                            <td>Manual paperwork density</td>
+                            <td><span id="risk-manual-paper" class="badge">Unknown</span></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>Operational Pain Points</h3>
+                    </div>
+                    <div class="grid-two">
+                      <div>
+                        <h4>Confirmed / Likely Pains</h4>
+                        <ul class="bullet-list" id="intel-pains-list"></ul>
+                      </div>
+                      <div>
+                        <h4>Questions to Validate</h4>
+                        <ul class="bullet-list" id="intel-validate-list"></ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>Local Authority &amp; Commissioner Insight</h3>
+                    </div>
+                    <div class="grid-two">
+                      <div class="data-group">
+                        <span class="data-label">Local Authority Partner</span>
+                        <span class="data-value" id="intel-la-name">Not found</span>
+                      </div>
+                      <div class="data-group">
+                        <span class="data-label">Commissioner Framework Type</span>
+                        <span class="data-value" id="intel-commissioner-type">Not found</span>
+                      </div>
+                    </div>
+                    <div class="form-group-row margin-top-sm">
+                      <div class="form-group">
+                        <label for="override-care-home-fee">Care Home Weekly Fee (GBP)</label>
+                        <input type="text" id="override-care-home-fee" placeholder="Needs manual verification">
+                      </div>
+                      <div class="form-group">
+                        <label for="override-homecare-fee">Homecare Hourly Fee (GBP)</label>
+                        <input type="text" id="override-homecare-fee" placeholder="Needs manual verification">
+                      </div>
+                    </div>
+                    <p class="context-desc" id="intel-la-relevance"></p>
+                  </div>
+                </div>
+
+                <div id="tab-out-copy-content" class="output-tab-pane">
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>UK Cold Call Opener</h3>
+                      <button class="btn btn-outline btn-sm" id="btn-copy-opener">Copy Opener</button>
+                    </div>
+                    <blockquote class="opener-quote" id="intel-call-opener"></blockquote>
+                    <p class="form-tip">Natural conversational opener, structured to read in under twenty seconds.</p>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>Email Hook &amp; Sequences</h3>
+                      <button class="btn btn-outline btn-sm" id="btn-copy-email">Copy Email Sequence</button>
+                    </div>
+                    <div class="email-preview-box">
+                      <p><strong>Subject:</strong> <span id="intel-email-subject"></span></p>
+                      <p><strong>Opening:</strong> <span id="intel-email-opening"></span></p>
+                      <p><strong>First Line:</strong> <span id="intel-email-first-line"></span></p>
+                      <p><strong>Value Proposition:</strong> <span id="intel-email-value"></span></p>
+                      <p><strong>Soft CTA:</strong> <span id="intel-email-cta"></span></p>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>3-Step Follow Up Sequence</h3>
+                      <button class="btn btn-outline btn-sm" id="btn-copy-sequence">Copy Sequence</button>
+                    </div>
+                    <div class="seq-slides">
+                      <div class="seq-slide">
+                        <h4>Day 1: Initial Pitch Email</h4>
+                        <pre class="pre-copyable" id="seq-day-1"></pre>
+                      </div>
+                      <div class="seq-slide">
+                        <h4>Day 3: Call Follow Up Outline</h4>
+                        <pre class="pre-copyable" id="seq-day-3"></pre>
+                      </div>
+                      <div class="seq-slide">
+                        <h4>Day 7: Re-engagement Push</h4>
+                        <pre class="pre-copyable" id="seq-day-7"></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="tab-out-objection-content" class="output-tab-pane">
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>Discovery &amp; Qualification Questions</h3>
+                      <button class="btn btn-outline btn-sm" id="btn-copy-discovery">Copy Discovery Questions</button>
+                    </div>
+                    <div class="grid-two">
+                      <div>
+                        <h4>Process Discovery</h4>
+                        <ul class="bullet-list" id="intel-discovery-process"></ul>
+                      </div>
+                      <div>
+                        <h4>MEDDICC Qualification</h4>
+                        <ul class="bullet-list" id="intel-discovery-meddicc"></ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>UK Care Objection Handling Framework</h3>
+                    </div>
+                    <div class="form-group">
+                      <label for="select-objection">Select Objection Type</label>
+                      <select id="select-objection">
+                        <option value="system">We already have a system</option>
+                        <option value="happy">We are happy with what we use</option>
+                        <option value="email">Send me an email</option>
+                        <option value="budget">No budget / Costs too high</option>
+                        <option value="busy">Too busy / Call back later</option>
+                        <option value="paper">We are paper based and not looking</option>
+                        <option value="birdie">We use Birdie</option>
+                        <option value="pcs">We use Person Centred Software (PCS)</option>
+                      </select>
+                    </div>
+                    <div class="objection-grid">
+                      <div class="obj-box obj-weak">
+                        <h5>Weak Response</h5>
+                        <p id="obj-val-weak"></p>
+                      </div>
+                      <div class="obj-box obj-better">
+                        <h5>Better Response</h5>
+                        <p id="obj-val-better"></p>
+                      </div>
+                      <div class="obj-box obj-best">
+                        <h5>Best Response</h5>
+                        <p id="obj-val-best"></p>
+                      </div>
+                    </div>
+                    <div class="grid-two margin-top-sm">
+                      <div class="data-group">
+                        <span class="data-label">Follow-up Validation Question</span>
+                        <span class="data-value" id="obj-val-followup"></span>
+                      </div>
+                      <div class="data-group">
+                        <span class="data-label">Demo Close Angle</span>
+                        <span class="data-value" id="obj-val-close"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="tab-out-handover-content" class="output-tab-pane">
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>BDM / AE Demo Notes Handover</h3>
+                      <button class="btn btn-outline btn-sm" id="btn-copy-bdm">Copy BDM Notes</button>
+                    </div>
+                    <pre class="handover-pre" id="intel-bdm-handover"></pre>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>CRM Note</h3>
+                      <button class="btn btn-outline btn-sm" id="btn-copy-crm">Copy CRM Note</button>
+                    </div>
+                    <pre class="handover-pre" id="intel-crm-note"></pre>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>Next Best Action &amp; Demo Focus</h3>
+                    </div>
+                    <div class="grid-two">
+                      <div class="action-alert-box">
+                        <h4>Next Best Action</h4>
+                        <p class="action-text" id="intel-next-action"></p>
+                        <p class="action-reason" id="intel-next-reason"></p>
+                      </div>
+                      <div>
+                        <h4>Recommended Demo Focus</h4>
+                        <ul class="bullet-list" id="intel-demo-focus-list"></ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>SDR Missing Information Checklist</h3>
+                    </div>
+                    <p class="form-tip">Verify these fields prior to BDM handover demo:</p>
+                    <ul class="checklist-items" id="intel-missing-checklist"></ul>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>Call Outcome Log</h3>
+                    </div>
+                    <div class="form-group">
+                      <label for="select-call-outcome">Outcome of Latest Attempt</label>
+                      <select id="select-call-outcome">
+                        <option value="">Select call outcome...</option>
+                        <option value="No answer">No answer</option>
+                        <option value="Gatekeeper">Gatekeeper block</option>
+                        <option value="Manager unavailable">Manager unavailable</option>
+                        <option value="Email requested">Email requested</option>
+                        <option value="Callback booked">Callback booked</option>
+                        <option value="Demo booked">Demo booked</option>
+                        <option value="Not interested">Not interested</option>
+                        <option value="Already using competitor">Already using competitor</option>
+                        <option value="Wrong fit">Wrong fit</option>
+                      </select>
+                    </div>
+                    <div id="outcome-generation-box" class="outcome-results-box hidden">
+                      <div class="data-group">
+                        <span class="data-label">Recommended Follow-Up Action</span>
+                        <span class="data-value" id="outcome-action"></span>
+                      </div>
+                      <div class="data-group margin-top-sm">
+                        <span class="data-label">CRM Log Entry Summary</span>
+                        <pre class="pre-copyable" id="outcome-crm"></pre>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <h3>Export Intelligence Brief</h3>
+                    </div>
+                    <div class="button-row">
+                      <button class="btn btn-outline" id="btn-exp-brief">Brief (.txt)</button>
+                      <button class="btn btn-outline" id="btn-exp-bdm">BDM Notes (.txt)</button>
+                      <button class="btn btn-outline" id="btn-exp-crm">CRM Note (.txt)</button>
+                      <button class="btn btn-outline" id="btn-exp-email">Email Hooks (.txt)</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section id="view-saved" class="view-panel">
+          <div class="card">
+            <div class="card-header">
+              <h3>Saved Care Accounts</h3>
+              <button class="btn btn-primary btn-sm" id="btn-export-csv-all">Export Saved Accounts (CSV)</button>
+            </div>
+            
+            <div class="filters-panel">
+              <div class="form-group-row">
+                <input type="text" id="saved-search-input" placeholder="Search saved accounts by name or city...">
+                <select id="filter-rating">
+                  <option value="">All CQC Ratings</option>
+                  <option value="Good">Good</option>
+                  <option value="Requires Improvement">Requires Improvement</option>
+                  <option value="Inadequate">Inadequate</option>
+                  <option value="Not found">Not found</option>
+                </select>
+                <select id="filter-opportunity">
+                  <option value="">All Scores</option>
+                  <option value="Hot">Hot</option>
+                  <option value="Warm">Warm</option>
+                  <option value="Nurture">Nurture</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table" id="saved-accounts-table">
+                <thead>
+                  <tr>
+                    <th>Provider Name</th>
+                    <th>Service Type</th>
+                    <th>Location</th>
+                    <th>CQC Rating</th>
+                    <th>Opportunity Score</th>
+                    <th>Last Checked</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="saved-accounts-tbody">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-daily" class="view-panel">
+          <div class="grid-three">
+            <div class="stat-card">
+              <div class="stat-num" id="stat-researched">0</div>
+              <div class="stat-label">Accounts Researched Today</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="stat-calls">0</div>
+              <div class="stat-label">Calls Made Today</div>
+              <button class="btn btn-outline btn-sm margin-top-sm" id="btn-inc-calls">+ Log Call</button>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="stat-demos">0</div>
+              <div class="stat-label">Demos Booked Today</div>
+              <button class="btn btn-outline btn-sm margin-top-sm" id="btn-inc-demos">+ Log Demo</button>
+            </div>
+          </div>
+
+          <div class="card margin-top-lg">
+            <div class="card-header">
+              <h3>High Priority Outreach Targets</h3>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Provider</th>
+                    <th>Service</th>
+                    <th>Location</th>
+                    <th>Urgent Pain</th>
+                    <th>Next Action</th>
+                    <th>Quick Launch</th>
+                  </tr>
+                </thead>
+                <tbody id="daily-outreach-tbody">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-settings" class="view-panel">
+          <div class="grid-two">
+            <div class="card">
+              <div class="card-header">
+                <h3>System Configuration</h3>
+              </div>
+              <div class="form-group">
+                <label for="select-system-mode">Active Operation Mode</label>
+                <select id="select-system-mode">
+                  <option value="demo">Demo Mode (Fictional Sample Data)</option>
+                  <option value="live">Live API Mode (CQC &amp; Companies House)</option>
+                </select>
+              </div>
+              
+              <div class="api-env-status">
+                <h4>API Credentials Environment Config</h4>
+                <ul class="credential-list">
+                  <li>
+                    <span class="cred-label">CQC_API_KEY</span>
+                    <span class="cred-value" id="status-cqc-key">Not Configured</span>
+                  </li>
+                  <li>
+                    <span class="cred-label">COMPANIES_HOUSE_API_KEY</span>
+                    <span class="cred-value" id="status-ch-key">Not Configured</span>
+                  </li>
+                </ul>
+                <p class="form-tip">API credentials must be declared on your Netlify environment. They are never exposed directly to the client browser.</p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Netlify Functions Verification</h3>
+                <button class="btn btn-outline btn-sm" id="btn-run-api-tests">Run Diagnostics</button>
+              </div>
+              <div class="diagnostic-list" id="diagnostic-tests-container">
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="qa-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Outreach Quality Check Diagnostics</h3>
+        <button class="btn-close" id="btn-close-qa-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="qa-checklist-results" id="qa-checklist-results-list">
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-confirm-qa-pass">Acknowledge QA Report</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

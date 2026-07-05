@@ -1,0 +1,13 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/cqc"
+  to = "/.netlify/functions/cqc-api"
+  status = 200
+
+[[redirects]]
+  from = "/api/companies-house"
+  to = "/.netlify/functions/companies-house-api"
+  status = 200
