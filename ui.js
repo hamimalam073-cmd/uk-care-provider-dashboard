@@ -81,6 +81,10 @@ const elements = {
   intelCqcLink: document.getElementById("intel-cqc-link"),
   intelChRecord: document.getElementById("intel-ch-record"),
   intelCqcLicence: document.getElementById("intel-cqc-licence"),
+  intelManagerName: document.getElementById("intel-manager-name"),
+  intelNominatedName: document.getElementById("intel-nominated-name"),
+  intelDirectorsList: document.getElementById("intel-directors-list"),
+  intelIncDate: document.getElementById("intel-inc-date"),
   intelPainsList: document.getElementById("intel-pains-list"),
   intelValidateList: document.getElementById("intel-validate-list"),
   intelLaName: document.getElementById("intel-la-name"),
@@ -454,7 +458,7 @@ function setupFormHandlers() {
     if (matchedCqc) {
       document.getElementById("input-providerName").value = matchedCqc.locationName;
       document.getElementById("input-serviceType").value = matchedCqc.serviceType;
-      document.getElementById("input-location").value = matchedCqc.address.split(",")[matchedCqc.address.split(",").length - 2] || "";
+      document.getElementById("input-location").value = matchedCqc.address.split(",")[matchedCqc.address.split(",").length - 2]?.trim() || "";
       document.getElementById("input-postcode").value = matchedCqc.postcode;
       document.getElementById("input-cqcProviderId").value = matchedCqc.cqcProviderId;
       document.getElementById("input-cqcLocationId").value = matchedCqc.cqcLocationId;
@@ -472,9 +476,21 @@ function setupFormHandlers() {
       if (lastApiData) {
         lastApiData.companiesHouseName = matchedCh.registeredCompanyName;
         lastApiData.companiesHouseNumber = matchedCh.companyNumber;
+        lastApiData.directors = matchedCh.directors;
+        lastApiData.incorporationDate = matchedCh.incorporationDate;
       } else {
-        lastApiData = { companiesHouseName: matchedCh.registeredCompanyName, companiesHouseNumber: matchedCh.companyNumber };
+        lastApiData = { 
+          companiesHouseName: matchedCh.registeredCompanyName, 
+          companiesHouseNumber: matchedCh.companyNumber,
+          directors: matchedCh.directors,
+          incorporationDate: matchedCh.incorporationDate
+        };
       }
+    }
+
+    // Automatically trigger the form submission to instantly render the output panel!
+    if (matchedCqc || matchedCh) {
+      elements.researchForm.dispatchEvent(new Event("submit"));
     }
   });
 
@@ -507,7 +523,9 @@ function setupFormHandlers() {
       cqcRating: document.getElementById("input-cqcRating").value,
       timeline: document.getElementById("input-timeline").value,
       currentPainPoints: document.getElementById("input-currentPainPoints").value,
-      messyNotes: document.getElementById("input-messyNotes").value
+      messyNotes: document.getElementById("input-messyNotes").value,
+      directors: lastApiData?.directors || [],
+      incorporationDate: lastApiData?.incorporationDate || ""
     };
 
     activeAccount = inputData;
@@ -712,6 +730,11 @@ function renderIntelligenceOutputs(account, intel, scoresResult, risksResult) {
     `<a href="https://find-and-update.company-information.service.gov.uk/company/${account.companiesHouseNumber}" target="_blank">Companies House File (${account.companiesHouseNumber})</a>` : 
     "Not found in Companies House data";
   elements.intelCqcLicence.textContent = CQC_LICENCE_ACKNOWLEDGEMENT;
+  
+  elements.intelManagerName.textContent = account.registeredManagerName || "Not found in API data";
+  elements.intelNominatedName.textContent = account.nominatedIndividualName || "Not found in API data";
+  elements.intelDirectorsList.textContent = account.directors && account.directors.length > 0 ? account.directors.join(", ") : "Not found in Companies House data";
+  elements.intelIncDate.textContent = account.incorporationDate || "Not found in Companies House data";
 
   // Risks Badges
   updateRiskBadge("risk-medication", risksResult.medication);
