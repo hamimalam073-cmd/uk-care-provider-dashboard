@@ -301,19 +301,43 @@ function setupSearchFlow() {
 
     const res = await fetchCqcData(query);
     if (!res.success) {
-      if (res.error && res.error.toLowerCase().includes("key is missing")) {
-        elements.searchErrorAlert.classList.remove("hidden");
-        elements.searchErrorAlert.innerHTML = "Live API keys are missing. Add CQC_API_KEY and COMPANIES_HOUSE_API_KEY in Netlify environment variables.";
-        showPane("pane-search");
+      // Fallback to mock data search if live API call fails to guarantee a working demo
+      const queryLower = query.toLowerCase();
+      const mockMatches = [];
+      for (const acc of SAMPLE_ACCOUNTS) {
+        if (acc.providerName.toLowerCase().includes(queryLower) || 
+            (acc.postcode && acc.postcode.toLowerCase().includes(queryLower)) ||
+            (acc.cqcLocationId && acc.cqcLocationId.toLowerCase() === queryLower) ||
+            (acc.cqcProviderId && acc.cqcProviderId.toLowerCase() === queryLower)) {
+          mockMatches.push(acc);
+        }
+      }
+
+      if (mockMatches.length > 0) {
+        renderSearchResults(mockMatches);
+        
+        // Prepend a notification explaining we fell back to mock data
+        const banner = document.createElement("div");
+        banner.className = "warning-alert";
+        banner.style.marginTop = "0";
+        banner.style.marginBottom = "16px";
+        banner.innerHTML = `⚠️ Live API query failed (${res.error}). Displaying matching offline demo records instead.`;
+        elements.searchResultsList.insertBefore(banner, elements.searchResultsList.firstChild);
       } else {
-        elements.searchResultsList.innerHTML = `
-          <div class="card">
-            <p class="text-danger"><strong>Search failed:</strong> ${res.error || "Unknown network error."}</p>
-            <div class="margin-top-sm" style="border-top: 1px solid var(--color-border); padding-top: 12px;">
-              <p class="form-tip"><strong>Hint:</strong> If you are testing the application locally or on a dev branch without configured credentials, go to the <strong>Settings</strong> tab and switch <strong>Active Operation Mode</strong> to <strong>Demo Mode</strong> to use local mock data.</p>
+        if (res.error && res.error.toLowerCase().includes("key is missing")) {
+          elements.searchErrorAlert.classList.remove("hidden");
+          elements.searchErrorAlert.innerHTML = "Live API keys are missing. Add CQC_API_KEY and COMPANIES_HOUSE_API_KEY in Netlify environment variables.";
+          showPane("pane-search");
+        } else {
+          elements.searchResultsList.innerHTML = `
+            <div class="card">
+              <p class="text-danger"><strong>Search failed:</strong> ${res.error || "Unknown network error."}</p>
+              <div class="margin-top-sm" style="border-top: 1px solid var(--color-border); padding-top: 12px;">
+                <p class="form-tip"><strong>Hint:</strong> If you are testing the application locally or on a dev branch without configured credentials, go to the <strong>Settings</strong> tab and switch <strong>Active Operation Mode</strong> to <strong>Demo Mode</strong> to use local mock data.</p>
+              </div>
             </div>
-          </div>
-        `;
+          `;
+        }
       }
       return;
     }
@@ -445,6 +469,25 @@ async function loadProviderProfile(cqcRecord, optionalFullMock = null) {
       const matchResult = matchCqcToCompaniesHouse(activeAccount, chRes.results);
       chRecord = parseCompaniesHouseRecord(matchResult.match);
       chMatch = matchResult;
+    } else {
+      // Fallback: Check mock Companies House records offline
+      let foundMockCh = null;
+      for (const key in MOCK_COMPANIES_HOUSE_RECORDS) {
+        const rec = MOCK_COMPANIES_HOUSE_RECORDS[key];
+        if (key === activeAccount.companiesHouseNumber || 
+            rec.registeredCompanyName.toLowerCase().includes(activeAccount.providerName.toLowerCase())) {
+          foundMockCh = rec;
+          break;
+        }
+      }
+      if (foundMockCh) {
+        chRecord = parseCompaniesHouseRecord(foundMockCh);
+        chMatch = {
+          confidence: "High",
+          reason: "Matched offline from mock database (Live API failed or not configured).",
+          warn: false
+        };
+      }
     }
   }
 
