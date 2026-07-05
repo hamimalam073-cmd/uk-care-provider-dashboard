@@ -21,6 +21,7 @@ const elements = {
   viewTitle: document.getElementById("view-title"),
   apiStatusBadge: document.getElementById("api-status-badge"),
   btnQuickStart: document.getElementById("btn-quick-start"),
+  btnHomeCta: document.getElementById("btn-home-cta"),
   
   // Navigation Links
   navHome: document.getElementById("nav-home"),
